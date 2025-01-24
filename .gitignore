@@ -1,0 +1,29 @@
+.envrc
+
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Executable files
+/bin/
+/out/
+/dist/
+
+# Test binary
+*.test
+
+# Go workspace
+/go.work
+/go.work.sum
+
+# Dependency directories (Go modules)
+vendor/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
