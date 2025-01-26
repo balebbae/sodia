@@ -10,13 +10,13 @@ type Storage struct {
 		Create(context.Context, *Post) error
 	}
 	Users interface {
-		Create(context.Context) error
+		Create(context.Context, *User) error
 	}
 }
 
 func NewStorage(db *sql.DB) Storage {
 	return Storage{
-		Posts: &PostsStore{db},
+		Posts: &PostStore{db},
 		Users: &UsersStore{db},
 	}
 }
