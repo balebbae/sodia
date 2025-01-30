@@ -40,6 +40,10 @@ func (app *application) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
+
+		r.Route("/posts", func(r chi.Router) {
+			r.Post("/", app.createPostHandler) // POST /v1/Posts
+		})
 	})
 
 	return r
@@ -59,3 +63,7 @@ func (app *application) run(mux http.Handler) error {
 
 	return server.ListenAndServe()
 }
+
+
+// create user(user struct, *db.DB){
+// }
