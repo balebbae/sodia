@@ -103,3 +103,26 @@ func (s *PostStore) Update(ctx context.Context, post *Post) error {
 	}
 	return nil
 }
+
+func (s *PostStore) Delete(ctx context.Context, postID int64) error {
+	query := `DELETE FROM posts WHERE id = $1`
+
+	// ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	// defer cancel()
+
+	res, err := s.db.ExecContext(ctx, query, postID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
