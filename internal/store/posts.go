@@ -85,20 +85,11 @@ func (s *PostStore) Update(ctx context.Context, post *Post) error {
 	query := `
 		UPDATE posts
 		SET title = $1,
-		    content = $2,
-		    tags = $3,
-		    updated_at = CURRENT_TIMESTAMP
-		WHERE id = $4
-		RETURNING updated_at
+		    content = $2
+		WHERE id = $3
 	`
-	err := s.db.QueryRowContext(
-		ctx,
-		query,
-		post.Title,
-		post.Content,
-		pq.Array(post.Tags),
-		post.ID,
-	).Scan(&post.UpdatedAt)
+	_, err := s.db.ExecContext(ctx, query, post.Title, post.Content, post.ID)
+
 	if err != nil {
 		return err
 	}
