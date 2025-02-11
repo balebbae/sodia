@@ -12,3 +12,7 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down
+
+.PHONY: seed
+seed:
+	@DB_ADDR="postgres://admin:adminpassword@localhost:5432/socialnetwork?sslmode=disable" go run ./cmd/migrate/seed/main.go
