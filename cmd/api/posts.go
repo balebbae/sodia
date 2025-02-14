@@ -174,3 +174,41 @@ func getPostFromCtx(r *http.Request) *store.Post {
 	post, _ := r.Context().Value(postCtx).(*store.Post)
 	return post
 }
+
+type CreateCommentPayload struct {
+	UserID int64 `json:"user_id" validate:"required"`
+	Content string 	`json:"content" validate:"required,max=1000"`
+}
+
+func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
+    post := getPostFromCtx(r)
+    if post == nil {
+        app.badRequestResponse(w, r, errors.New("post not found in context"))
+        return
+    }
+
+    var payload CreateCommentPayload
+    if err := readJSON(w, r, &payload); err != nil {
+        app.badRequestResponse(w, r, err)
+        return
+    }
+
+    if err := Validate.Struct(payload); err != nil {
+        app.badRequestResponse(w, r, err)
+        return
+    }
+
+    comment := &store.Comment{
+        PostID:  post.ID,
+        UserID:  payload.UserID,
+        Content: payload.Content,
+    }
+
+    ctx := r.Context()
+    if err := app.store.Comments.Create(ctx, comment); err != nil {
+        app.internalServerError(w, r, err)
+        return
+    }
+
+    writeJSON(w, http.StatusCreated, comment)
+}

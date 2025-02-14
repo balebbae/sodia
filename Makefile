@@ -1,3 +1,5 @@
+# FOR SOME REASON I MY SEED ONLY WORKS WHEN I EXPLICITLY SET THE DB_ADDR
+
 include .envrc
 MIGRATIONS_PATH = ./cmd/migrate/migrations
 
