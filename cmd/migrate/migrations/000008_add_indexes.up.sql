@@ -1,3 +1,5 @@
+-- Causes faster reads but slower writes
+
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX idx_comments_content ON comments USING gin (content gin_trgm_ops);

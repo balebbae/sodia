@@ -60,7 +60,14 @@ func (app *application) mount() http.Handler {
 				r.Put("/follow", app.followUserHandler)
 				r.Put("/unfollow", app.unfollowUserHandler)
 			})
+
+			r.Group(func(r chi.Router){
+				r.Get("/feed", app.getUserFeedHandler)
+			})
 		})
+
+		// "v1/users/feed/" --> show feed for that user 
+				// Have that user session 
 
 	})
 
