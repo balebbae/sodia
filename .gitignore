@@ -27,3 +27,6 @@ vendor/
 *.tmp
 *.swp
 *.swo
+
+# Auto-generated Docs
+/docs/

@@ -45,22 +45,16 @@ func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, fq PaginatedF
 		FROM posts p
 		LEFT JOIN comments c ON c.post_id = p.id
 		LEFT JOIN users u ON p.user_id = u.id
-		LEFT JOIN followers f
+		JOIN followers f
 			ON f.follower_id = p.user_id
-		AND f.user_id = $1
+		OR p.user_id = $1
 		WHERE
-			-- Show own posts or posts by people the user follows
-			(p.user_id = $1 OR f.user_id = $1)
-			-- Filter by search
-			AND (p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%')
-			-- Filter by tags
-			AND (p.tags @> $5 OR $5 = '{}')
-		GROUP BY
-			p.id, u.username
-		-- Use a validated or whitelisted sort
-		ORDER BY
-			p.created_at ` + fq.Sort + `
-		LIMIT $2 OFFSET $3;
+			f.user_id = $1 AND
+			(p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
+			(p.tags @> $5 OR $5 = '{}')
+		GROUP BY p.id, u.username
+		ORDER BY p.created_at ` + fq.Sort + `
+		LIMIT $2 OFFSET $3
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
