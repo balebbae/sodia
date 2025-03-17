@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+
 	"net/http"
 	"time"
 
@@ -11,11 +11,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 type application struct {
 	config config
 	store store.Storage
+	logger *zap.SugaredLogger
 }
 
 type config struct {
@@ -71,6 +73,11 @@ func (app *application) mount() http.Handler {
 			r.Group(func(r chi.Router){
 				r.Get("/feed", app.getUserFeedHandler)
 			})
+
+			// Public Routes
+			r.Route("/authentication", func(r chi.Router) {
+				r.Post("/user", app.registerUserHandler)
+			})
 		})
 
 		// "v1/users/feed/" --> show feed for that user 
@@ -95,11 +102,10 @@ func (app *application) run(mux http.Handler) error {
 		IdleTimeout: time.Minute,
 	}
 
-	log.Printf("server has started at %s", app.config.addr)
+	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env)
 
 	return server.ListenAndServe()
 }
-
 
 // create user(user struct, *db.DB){
 // }
