@@ -3,6 +3,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/balebbae/sodia/internal/db"
 	"github.com/balebbae/sodia/internal/env"
 	"github.com/balebbae/sodia/internal/store"
@@ -39,6 +41,9 @@ func main() {
 			maxIdleTime: env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
 		env: env.GetString("ENV", "devlopment"),
+		mail: mailConfig{
+			exp: time.Hour * 24 * 3, // 3 days
+		},
 	}
 	
 	// Logger

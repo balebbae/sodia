@@ -1,6 +1,13 @@
 package main
 
-import "net/http"
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+
+	"github.com/balebbae/sodia/internal/store"
+	"github.com/google/uuid"
+)
 
 type RegisterUserPayload struct {
 	Username string `json:"username" validate:"required,max=100"`
@@ -22,7 +29,7 @@ type RegisterUserPayload struct {
 //	@Router			/authentication/user [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload RegisterUserPayload
-	if err := readJSON(w, r, payload); err != nil {
+	if err := readJSON(w, r, &payload); err != nil {
 		app.badRequestResponse(w, r, err)
 		return 
 	}
@@ -30,5 +37,44 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	if err := Validate.Struct(payload); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
+	}
+
+	user := &store.User{
+		Username: payload.Username,
+		Email: payload.Email,
+	}
+
+	// Hash the user password
+	if err := user.Password.Set(payload.Password); err != nil {
+		app.internalServerError(w, r, err)
+		return 
+	}
+
+	ctx := r.Context()
+
+	plainToken := uuid.New().String()
+	
+	// Store token in DB encrypted 
+	hash := sha256.Sum256([]byte(plainToken))
+	hashToken := hex.EncodeToString(hash[:])
+
+	// Store the user
+	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
+	if err != nil {
+		switch err {
+		case store.ErrDuplicateEmail:
+			app.badRequestResponse(w, r, err)
+		case store.ErrDuplicateUsername:
+			app.badRequestResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return 
+	}
+
+	// Send mail 
+
+	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+		app.internalServerError(w, r, err)
 	}
 }
