@@ -11,6 +11,7 @@ import (
 	"github.com/balebbae/sodia/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
@@ -57,6 +58,23 @@ func (app *application) mount() http.Handler {
   	r.Use(middleware.Recoverer)
 
 	r.Use(middleware.Timeout(60 * time.Second))
+
+    // 1) Enable CORS
+    r.Use(cors.Handler(cors.Options{
+        // Use your frontend URL here. This might be "http://localhost:5173".
+        AllowedOrigins:   []string{app.config.frontendURL},
+
+        // If you need multiple, simply add them:
+        // AllowedOrigins: []string{"http://localhost:3000", "http://localhost:5173"},
+
+        // You can also set a wildcard: []string{"*"}
+
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+        ExposedHeaders:   []string{"Link"},
+        AllowCredentials: false,
+        MaxAge:           300, // 300 seconds = 5 minutes
+    }))
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
