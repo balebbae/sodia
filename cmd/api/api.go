@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/balebbae/sodia/docs" // This is rquired to generate swagger docs
+	"github.com/balebbae/sodia/internal/mailer"
 	"github.com/balebbae/sodia/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,6 +19,7 @@ type application struct {
 	config config
 	store store.Storage
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
@@ -26,10 +28,17 @@ type config struct {
 	env string
 	apiURL string
 	mail mailConfig
+	frontendURL string
 }
 
 type mailConfig struct {
+	sendGrid sendGridConfig
+	fromEmail string
 	exp time.Duration
+}
+
+type sendGridConfig struct {
+	apiKey string
 }
 
 type dbConfig struct {
@@ -68,6 +77,8 @@ func (app *application) mount() http.Handler {
 			})
 		})
 		r.Route("/users", func(r chi.Router) {
+			r.Put("/activate/{token}", app.activateUserHandler)
+
 			r.Route("/{userID}", func(r chi.Router) { 
 				r.Use(app.userContextMiddleware)
 				r.Get("/", app.getUserHandler)

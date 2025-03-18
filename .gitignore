@@ -30,3 +30,6 @@ vendor/
 
 # Auto-generated Docs
 /docs/
+
+# Node modules
+/web/node_modules
